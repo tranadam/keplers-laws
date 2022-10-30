@@ -21,20 +21,19 @@ v = v0
 data = []
 
 while True:
+    data.append([t,r[0],r[1]])
     abs_r = np.sqrt(r[0]**2+r[1]**2)
     a = -G*(M/abs_r**3)*r
-    data.append([t,r[0],r[1],v[0],v[1]])
     v = v + a*dt
     r = r + v*dt
     t += dt
     # okonči cyklus, pokud byla oběhnuta celá dráha jednou // momentální vektorová poloha je mezi úplně prvním a druhým záznamem
     if (t > dt*2) and (r[0] >= data[0][1] and r[0] < data[1][1]) and (r[1] >= data[0][2] and r[1] < data[1][2]):
         break
-tt, xx, yy, vvx, vvy = np.hsplit(np.array(data),5)
+tt, xx, yy = np.hsplit(np.array(data),3)
 xx = xx/AU # [AU]
 yy = yy/AU # [AU]
-vvx = vvx/AU # [AU/s]
-vvy = vvy/AU # [AU/s]
+
 
 ax.plot(xx,yy,"o", color="blue", markersize=1, label="oběžná dráha planety") # oběžná dráha
 ax.plot(0,0, "o", color="orange", markersize=10, label="Slunce") # Slunce v jednom ohnisku
@@ -82,14 +81,15 @@ def count_rsu():
     return rsu[0]
 
 def update_area(orbit_percentage):
-    orbit_time, a_coor, b_coor, c_coor, S = count_swept_area(orbit_percentage)
     for patch in ax.patches:
         patch.remove()
     for txt in ax.texts:
         txt.remove()
 
+    orbit_time, a_coor, b_coor, c_coor, S = count_swept_area(orbit_percentage)
     area_triangle = plt.Polygon(np.array([[xx[orbit_time], yy[orbit_time]],[xx[orbit_time+1], yy[orbit_time+1]],[0,0]], dtype=object), color="red", label=f"plocha opsaná průvodičem planety za {dt}s")
     ax.add_patch(area_triangle)
+
     if a_coor[0] < b_coor[0]:
         ax.text(s="A", x=a_coor[0]-0.03, y=a_coor[1])
         ax.text(s="B", x=b_coor[0]+0.03, y=b_coor[1])
@@ -104,7 +104,7 @@ SOUŘADNICE VYKRESLENÉHO TROJÚHELNÍKU
 A = {a_coor[0][0], a_coor[1][0]}
 B = {b_coor[0][0], b_coor[1][0]}
 C = {c_coor[0][0], c_coor[1][0]}\n
-S = {S[0]} m^2
+S = {S[0]} AU^2
 δ = {count_rsu()}
 """)
 
