@@ -55,7 +55,7 @@ while True:
         break
 
 """
-Zpracování dat pro ověčení druhého Keplrova zákonu,
+Zpracování dat pro ověření druhého Keplrova zákonu,
 tedy výpočet plochy opsané průvodičem za určitý čas
 """
 
@@ -118,8 +118,8 @@ S = {S[0]:.12e} AU^2
 
 
 """
-Vygenerování ilustrace opsané plochy s posuvníkem a
-vyrobení výsledného grafu pro potvrzení
+Vygenerování simulace opsané plochy s posuvníkem a
+vyrobení výsledného grafu pro potvrzení zákonu
 """
 
 fig, ax = plt.subplots(nrows=1, ncols=2)
@@ -143,7 +143,7 @@ ax[0].plot(xx,yy,"o", color="blue", markersize=1, label="oběžná dráha planet
 ax[0].plot(0,0, "o", color="orange", markersize=10, label="Slunce") # Slunce v jednom ohnisku
 ax[0].set_ylabel("y [AU]")
 ax[0].set_xlabel("x [AU]")
-ax[0].set_title("Animace pohybu planety a obsahu plochy")
+ax[0].set_title("Simulace pohybu planety a obsahu plochy")
 ax[0].axis("scaled")
 ax[0].grid()
 ax[0].legend(loc="upper right", fontsize="x-small")
