@@ -1,6 +1,8 @@
 import numpy as np
 from matplotlib.widgets import Slider
 import matplotlib.pyplot as plt
+from scipy import constants
+
 
 """
 Výpočet pohybu planety za vlivu pouze gravitační síly Slunce vycházeje
@@ -9,8 +11,8 @@ z hmotností těles, počáteční rychlosti a počáteční vzdálenosti
 
 m = 5.972e24 # hmotnost planety Země [kg]
 M = 1.989e30 # hmotnost Slunce [kg]
-G = 6.6743e-11 # gravitační konstanta [m^3 * kg^-1 * s^-2]
-AU = 149597870700.0 # astronomická jednotka [m]
+G = constants.G # gravitační konstanta [m^3 * kg^-1 * s^-2]
+AU = constants.astronomical_unit # astronomická jednotka [m]
 r0 = np.array([-1.0167*AU, 0*AU]) # počáteční vektor polohy - vzdálenost Země v aféliu
 # v0 = np.array([0, 29290.0]) # pocatecni vektor rychlosti [m/s] - rychlost Země v aféliu
 v0 = np.array([0, 2e4]) # pocatecni vektor rychlosti [m/s] - více excentrická dráha pro lepší ilustraci
@@ -54,14 +56,14 @@ while True:
     if len(data) > 500000:
         break
 
+tt, xx, yy, ss, ss_accumulative = np.hsplit(np.array(data), 5)
+xx = xx/AU # konvertovat do [AU]
+yy = yy/AU # konvertovat do [AU]
+
 """
 Zpracování dat pro ověření druhého Keplrova zákonu,
 tedy výpočet plochy opsané průvodičem za určitý čas
 """
-
-tt, xx, yy, ss, ss_accumulative = np.hsplit(np.array(data), 5)
-xx = xx/AU # konvertovat do [AU]
-yy = yy/AU # konvertovat do [AU]
 
 def get_swept_area(orbit_percentage):
     orbit_time = int(len(tt) * (orbit_percentage/100))
@@ -152,7 +154,7 @@ ax[1].plot(tt, ss_accumulative, "-", color="red", linewidth=1)
 ax[1].set_ylabel("kumulativní opsaná plocha [AU²]")
 ax[1].set_xlabel("čas [s]")
 ax[1].grid()
-ax[1].set_title("Kumulativní plocha v závislosti na čas")
+ax[1].set_title("Kumulativní plocha v závislosti na čase")
 
 
 plt.suptitle("Potvrzení druhého Keplerova zákona")
