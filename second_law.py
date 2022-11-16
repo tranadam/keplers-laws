@@ -25,6 +25,7 @@ r = r0
 v = v0
 S = None
 accumulative_area = 0
+counter_cross_x = 0
 data = []
 
 while True:
@@ -49,8 +50,12 @@ while True:
         S = np.sqrt(s*(s-AC)*(s-AB)*(s-BC))
         accumulative_area += S
 
-    # ukonči cyklus, pokud byla oběhnuta celá dráha jednou // momentální vektorová poloha je mezi úplně prvním a druhým záznamem
-    if (t > dt*2) and (r[0] >= data[0][1] and r[0] < data[1][1]) and (r[1] >= data[0][2] and r[1] < data[1][2]):
+    # počítá, kolikrát se změní znaménko na y-ové ose - planeta oběhla 180deg, půl oběhu
+    if np.sign(r[1]) == np.sign(data[-1][2]) * -1:
+        counter_cross_x += 1
+
+    # okonči cyklus, pokud planeta dvakrát prošla x-ovou osou
+    if counter_cross_x == 2:
         break
     # ukonči cyklus, pokud simulace trvá moc dlouho // oběh se neuzavírá, nebo je tam až příliš kroků
     if len(data) > 500000:

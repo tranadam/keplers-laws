@@ -22,6 +22,7 @@ dt = 3600 # časový krok [s] // lze zmenšit pro přesnější simulaci
 t = 0
 r = r0
 v = v0
+counter_cross_x = 0
 data = []
 
 while True:
@@ -31,14 +32,19 @@ while True:
     v += a*dt
     r += v*dt
     t += dt
-    # okonči cyklus, pokud byla oběhnuta celá dráha jednou // momentální vektorová poloha je mezi úplně prvním a druhým záznamem
-    if (t > dt*2) and (r[0] >= data[0][1] and r[0] < data[1][1]) and (r[1] >= data[0][2] and r[1] < data[1][2]):
+
+    # počítá, kolikrát se změní znaménko na y-ové ose - planeta oběhla 180deg, půl oběhu
+    if np.sign(r[1]) == np.sign(data[-1][2]) * -1:
+        counter_cross_x += 1
+
+    # okonči cyklus, pokud planeta dvakrát prošla x-ovou osou
+    if counter_cross_x == 2:
         break
     # ukonči cyklus, pokud simulace trvá moc dlouho // oběh se neuzavírá, nebo je tam až příliš kroků
     if len(data) > 500000:
         break
 
-tt, xx, yy = np.hsplit(np.array(data),3)
+tt, xx, yy = np.hsplit(np.array(data), 3)
 xx = xx/AU # konvertovat do [AU]
 yy = yy/AU # konvertovat do [AU]
 
@@ -96,7 +102,6 @@ def update_plot(orbit_percentage):
     whole_dist, sun_point_dist, focus_point_dist, x_focus, y_focus, x_sun, y_sun, x_point, y_point = count_foci_point_distance(orbit_time)
     connection_line = plt.Polygon(np.array([[x_focus[0], y_focus[0]],[x_point[0], y_point[0]], [x_sun, y_sun]], dtype=object), color="red",label="spojnice ohniska s bodem na elipse a druhým ohniskem", closed=False, fill=False)
     ax[0].add_patch(connection_line)
-
     ax[0].text(x=np.amin(xx), y=np.amin(yy),
             backgroundcolor="#ffffffcf", fontsize="x-small",
             s=f"""
@@ -111,7 +116,6 @@ F₂ = ({x_focus[0]:.6e}, {y_focus[0]:.6e})
 
 second_focus_coor = (find_second_focus())
 rsu = count_rsu()
-print(rsu)
 
 """
 Vygenerování simulace součtu vzdáleností od ohnisek s posuvníkem
