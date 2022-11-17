@@ -14,13 +14,15 @@ AU = constants.astronomical_unit # astronomická jednotka [m]
 r0 = np.array([-1.0167*AU, 0*AU]) # počáteční vektor polohy - vzdálenost Země v aféliu
 v0 = np.array([0, 2e4]) # počáteční vektor rychlosti [m/s] - více excentrická dráha pro lepší ilustraci
 
-dt = 36 # časový krok [s] // lze zmenšit pro přesnější simulaci
+dt = 3600 # časový krok [s] // lze zmenšit pro přesnější simulaci
 
 # inicializace
 t = 0
 r = r0
 v = v0
+counter_cross_x = 0
 data = []
+periheliums = []
 
 while True:
     data.append([t,r[0],r[1], v[0], v[1]])
@@ -29,24 +31,53 @@ while True:
     v += a*dt
     r += v*dt
     t += dt
-    # ukonči cyklus, až po hodně obězích
-    if len(data) > 500000:
+
+    # počítá, kolikrát se změní znaménko na y-ové ose - planeta oběhla 180deg, půl oběhu
+    if np.sign(r[1]) == np.sign(data[-1][2])*-1 or np.sign(r[1]) == 0:
+        counter_cross_x += 1
+        # pokud je počítadlo liché, náchází se planeta v perihéliu
+        if counter_cross_x%2 == 1:
+            # spočítá vzdálenost od Slunce, převede na AU a zaokrouhlí na 5 desetinných míst
+            perihelium_dist = float(f"{(np.sqrt(r[0]**2 + r[1]**2)/AU):.4f}")
+            periheliums.append(perihelium_dist)
+
+    # okonči cyklus, pokud planeta prošla x-ovou osou dostkrát
+    if counter_cross_x == 200:
         break
 
 tt, xx, yy, vvx, vvy = np.hsplit(np.array(data),5)
-xx = xx/AU # konvertovat do [AU]
-yy = yy/AU # konvertovat do [AU]
 
-hybnost = m * np.sqrt(vvx**2 + vvy**2)
-sun_dist = np.sqrt(xx**2 + yy**2)
-moment_hybnosti = sun_dist * hybnost
+num_of_orbits = counter_cross_x/2
+orbit_time = t/(counter_cross_x/2) # v sekundách
+orbit_days = orbit_time/60/60/24
+print(f"Počet oběhu: {num_of_orbits}\nČas oběhu {orbit_days}")
 
-fig, ax = plt.subplots()
+sli = slice(0,-1,int(len(xx)/100)) # vyber pouze 100 záznamů
+xx_100 = xx[sli]
+yy_100 = yy[sli]
+vvx_100 = vvx[sli]
+vvy_100 = vvy[sli]
+tt_100 = tt[sli]
 
-ax.plot(tt, moment_hybnosti, "-", color="red", linewidth=1)
-ax.set_title("Změna momentu hybnosti v závislosti na čase")
-ax.set_ylabel("moment hybnosti [kg·m2·s−1]")
-ax.set_xlabel("čas [s]")
-ax.grid()
+rr_100 = np.sqrt(xx_100**2 + yy_100**2)
+vv_100 = np.sqrt(vvx_100**2+vvy_100**2)
+
+e_potential = -(G*M*m/rr_100)
+e_mechanical = 1/2*m*vv_100**2
+total_energy = (e_mechanical + e_potential) / 10**6 # to MJ
+
+fig, ax = plt.subplots(nrows=1, ncols=2)
+
+ax[0].plot(tt_100/orbit_time, total_energy, "-", color="red", linewidth=1)
+ax[0].set_title("Vývoj celkové energie v čase")
+ax[0].set_ylabel("energie [MJ]")
+ax[0].set_xlabel("počet oběhů")
+ax[0].grid()
+
+ax[1].plot(np.arange(0,len(periheliums)), periheliums, "-", color="red",linewidth=1)
+ax[1].set_title("Změna vzdálenosti planety od Slunce v perihéliu")
+ax[1].set_ylabel("vzdálenost [AU]")
+ax[1].set_xlabel("počet oběhů")
+ax[1].grid()
 
 plt.show()
