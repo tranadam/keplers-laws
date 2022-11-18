@@ -14,7 +14,6 @@ M = 1.989e30 # hmotnost Slunce [kg]
 G = constants.G # gravitační konstanta [m^3 * kg^-1 * s^-2]
 AU = constants.astronomical_unit # astronomická jednotka [m]
 r0 = np.array([-1.0167*AU, 0*AU]) # počáteční vektor polohy - vzdálenost Země v aféliu
-# v0 = np.array([0, 29290.0]) # pocatecni vektor rychlosti [m/s] - rychlost Země v aféliu
 v0 = np.array([0, 2e4]) # pocatecni vektor rychlosti [m/s] - více excentrická dráha pro lepší ilustraci
 
 dt = 3600 # časový krok [s] // lze zmenšit pro přesnější simulaci
@@ -37,10 +36,12 @@ while True:
     t += dt
 
     if len(data) > 1:
-        a_coor = np.array([data[-1][1], data[-1][2]])
-        b_coor = np.array([data[-2][1], data[-2][2]])
-        c_coor = np.array([[0],[0]])
+        # získá poslední a předposlední záznam lokace
+        a_coor = (data[-1][1], data[-1][2])
+        b_coor = (data[-2][1], data[-2][2])
+        c_coor = (0, 0) # souřadnice Slunce
 
+        # pomocí Pythagorovy věty dopočítá vzdálenosti mezi třemi body
         AC = np.sqrt(a_coor[0]**2 + a_coor[1]**2)
         BC = np.sqrt(b_coor[0]**2 + b_coor[1]**2)
         AB = np.sqrt(abs(a_coor[0]-b_coor[0])**2 + abs(a_coor[1]-b_coor[1])**2)
@@ -50,16 +51,15 @@ while True:
         S = np.sqrt(s*(s-AC)*(s-AB)*(s-BC))
         accumulative_area += S
 
-    # počítá, kolikrát se změní znaménko na y-ové ose - planeta oběhla 180deg, půl oběhu
-    if np.sign(r[1]) == np.sign(data[-1][2]) * -1:
+    # počítá, kolikrát se změní znaménko na y-ové ose -> planeta oběhla 180deg, půl oběhu
+    if np.sign(r[1]) == np.sign(data[-1][2])*-1 or np.sign(r[1]) == 0:
         counter_cross_x += 1
 
     # okonči cyklus, pokud planeta dvakrát prošla x-ovou osou
     if counter_cross_x == 2:
         break
-    # ukonči cyklus, pokud simulace trvá moc dlouho // oběh se neuzavírá, nebo je tam až příliš kroků
-    if len(data) > 500000:
-        break
+
+print(f"Počet oběhu: {counter_cross_x/2}")
 
 tt, xx, yy, ss, ss_accumulative = np.hsplit(np.array(data), 5)
 xx = xx/AU # konvertovat do [AU]
@@ -72,9 +72,9 @@ tedy výpočet plochy opsané průvodičem za určitý čas
 
 def get_swept_area(orbit_percentage):
     orbit_time = int(len(tt) * (orbit_percentage/100))
-    a_coor = np.array([xx[orbit_time], yy[orbit_time]])
-    b_coor = np.array([xx[orbit_time+1], yy[orbit_time+1]])
-    c_coor = np.array([[0],[0]])
+    a_coor = (xx[orbit_time], yy[orbit_time])
+    b_coor = (xx[orbit_time+1], yy[orbit_time+1])
+    c_coor = (0, 0)
     S = ss[orbit_time]
     return orbit_time, a_coor, b_coor, c_coor, S
 
@@ -102,7 +102,7 @@ def update_area(orbit_percentage):
         txt.remove()
 
     orbit_time, a_coor, b_coor, c_coor, S = get_swept_area(orbit_percentage)
-    area_triangle = plt.Polygon(np.array([[xx[orbit_time], yy[orbit_time]],[xx[orbit_time+1], yy[orbit_time+1]],[0,0]], dtype=object), color="red", label=f"plocha opsaná průvodičem planety za {dt}s")
+    area_triangle = plt.Polygon(np.array([[xx[orbit_time], yy[orbit_time]],[xx[orbit_time+1], yy[orbit_time+1]],[0,0]], dtype=object), color="red", label=f"plocha opsaná průvodičem planety za {dt} s")
     ax[0].add_patch(area_triangle)
 
     if a_coor[0] < b_coor[0]:
@@ -111,14 +111,15 @@ def update_area(orbit_percentage):
     elif a_coor[0] >= b_coor[0]:
         ax[0].text(s="A", x=a_coor[0]+0.03, y=a_coor[1])
         ax[0].text(s="B", x=b_coor[0]-0.03, y=b_coor[1])
+
     ax[0].text(s="C", x=c_coor[0], y=c_coor[1])
-    ax[0].text(x=np.amin(xx), y=np.amin(yy),
+    ax[0].text(x=np.min(xx), y=np.min(yy),
             backgroundcolor="#ffffffcf", fontsize="x-small",
             s=f"""
 SOUŘADNICE VYKRESLENÉHO TROJÚHELNÍKU
 A = ({a_coor[0][0]:.6e}, {a_coor[1][0]:.6e})
 B = ({b_coor[0][0]:.6e}, {b_coor[1][0]:.6e})
-C = {c_coor[0][0], c_coor[1][0]}\n
+C = {c_coor[0], c_coor[1]}\n
 S = {S[0]:.12e} AU^2
 δ = {rsu:.12e}
 """)
