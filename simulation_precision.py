@@ -32,12 +32,13 @@ while True:
     r += v*dt
     t += dt
 
-    # počítá, kolikrát se změní znaménko na y-ové ose - planeta oběhla 180deg, půl oběhu
+    # počítá, kolikrát se změní znaménko na y-ové ose -> planeta oběhla 180deg, půl oběhu
     if np.sign(r[1]) == np.sign(data[-1][2])*-1 or np.sign(r[1]) == 0:
         counter_cross_x += 1
+
         # pokud je počítadlo liché, náchází se planeta v perihéliu
         if counter_cross_x%2 == 1:
-            # spočítá vzdálenost od Slunce, převede na AU a zaokrouhlí na 5 desetinných míst
+            # spočítá vzdálenost od Slunce, převede na AU a zaokrouhlí
             perihelium_dist = float(f"{(np.sqrt(r[0]**2 + r[1]**2)/AU):.4f}")
             periheliums.append(perihelium_dist)
 
