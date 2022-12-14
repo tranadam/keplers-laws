@@ -158,7 +158,7 @@ ax[0].legend(loc="upper right", fontsize="x-small")
 
 ax[1].plot(graph_time,graph_dist, "-", color="red", linewidth=1, label="součet vzdáleností")
 ax[1].plot(graph_time, graph_sun, "-", color="orange", linewidth=1, label="vzdálenost od Slunce")
-ax[1].plot(graph_time, graph_focus, "-", color="blue", linewidth=1, label="vzdálenost od druhého ohniska")
+ax[1].plot(graph_time, graph_focus, "-", color="black", linewidth=1, label="vzdálenost od druhého ohniska")
 ax[1].set_ylabel("vzdálenost od ohnisek [AU]") # čtyři desetinná místa
 ax[1].set_xlabel("čas [s]")
 ax[1].set_title("Vzdálenost planety od ohnisek v závislosti na čase")
